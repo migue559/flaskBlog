@@ -1,0 +1,1 @@
+@"c:\users\miguel\documents\sublime\flaskblog\flaskblog\scripts\python.exe" "c:\users\miguel\documents\sublime\flaskblog\flaskblog\Scripts\markdown_py" %*
