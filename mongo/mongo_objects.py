@@ -64,4 +64,12 @@ def insert_author_operation(id, fullname,email,username,password,is_author=False
 	coll_author.insert({'id': id,'fullname':fullname,'email':email,'username': username,'password':password,'is_author':is_author})
 	return True
 
-
+def insert_category(new_category):
+	id=[]
+	coll_category=mongo.db.category
+	max_id=coll_category.find().sort([('id', -1)]).limit(1)   #recupera el ultimo id de la colleccion author
+	for reg in max_id:
+		id.append(reg['id'])
+	id_=id[0]+1
+	coll_category.insert({'id':id_,'name':new_category})
+	return True

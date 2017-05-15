@@ -1,12 +1,13 @@
 from flaskBlog import app
 from mongo import mongo_objects
-from flask import render_template, redirect, url_for, flash
-from blog.form import SetupForm   , PostForm
+from flask import render_template, redirect, url_for, flash, session
+from blog.form import SetupForm   , PostForm, Category
 from author.models import Author
-from blog.models import Blog
+from blog.models import Blog, Post
 from mongo import mongo_objects
 from author.decorators import login_required, author_required
 import bcrypt
+import datetime
 
 
 @app.route('/')
@@ -34,9 +35,8 @@ def setup():
 			form.username.data,
 			hashed_password,
 			True)
-		blog = Blog(form.name.data,1)#author.id)
-		
-		return redirect(url_for('test',
+		blog = Blog(form.name.data,1)
+		return redirect(url_for('saveBlogAuthor',
 			fullname=author.fullname,
 			email=author.email,
 			username=author.username,
@@ -49,7 +49,20 @@ def setup():
 @author_required
 def post():
 	form=PostForm()
-	form.category.choices = [   ( item["id"],item["name"] ) for item in mongo_objects.find_categories()  ]
+	form.category.choices = [   ( str(item["id"]),item["name"] ) for item in mongo_objects.find_categories() ]
+	if  form.validate_on_submit():
+		if form.new_category.data:
+			new_category = form.new_category.data
+			category = new_category
+		else:
+			new_category='no'
+			category = form.category.data
+		Blog=username=session['username']
+		title=form.title.data
+		body=form.body.data
+		slug=None
+		post=""
+		return redirect(url_for('savePost',title=title,body=body,category=category,new_category=new_category,Blog=Blog))
 	return render_template('/blog/post.html', form=form)
 
 @app.route('/article')
@@ -58,8 +71,8 @@ def article():
 	return render_template('blog/article.html')
 
 
-@app.route('/test/<fullname>/<email>/<username>/<password>/<blog>')
-def test(fullname,email,username,password,blog):
+@app.route('/saveBlogAuthor/<fullname>/<email>/<username>/<password>/<blog>')
+def saveBlogAuthor(fullname,email,username,password,blog):
 	max_id_author=mongo_objects.get_id_author()
 	max_id_blog=mongo_objects.get_id_blog()
 	if max_id_author and max_id_blog:
@@ -87,6 +100,26 @@ def test(fullname,email,username,password,blog):
 		#return "fullname: %s email: %a username: %s password: %s blog: %s max id_author: %s id_blog: %s" % (fullname,email,username,password,blog,id_author,id_blog)
 	except:
 		return "no se hizo la creacion del blog"
+
+@app.route('/savePost/<title>/<body>/<category>/<new_category>/<Blog>')#/<body>/<category>/<new_category>', methods=('GET','POST'))
+def savePost(title=None,body=None,category=None,new_category=None,Blog=None):	
+	if new_category=='no':
+		return "AAAAA   TITLE: %s BODY: %s  CATEGORY: %s NEW CAT: %s  y blog %s" % (title, body, category, new_category, Blog)
+		
+	else:
+		mongo_objects.insert_category(new_category)
+		return "TITLE: %s BODY: %s  CATEGORY: %s NEW CAT: %s y body %s" % (title, body, category, new_category,Blog)#redirect('/admin')
+	#try:
+		#mongo_objects.insert_author_operation(id_author,fullname,email,username,password,is_author=True)
+		#mongo_objects.insert_blog_operation(id_blog,blog,id_author)
+		#flash('Post created')
+		#return "fullname: %s email: %a username: %s password: %s blog: %s max id_author: %s id_blog: %s" % (fullname,email,username,password,blog,id_author,id_blog)
+	#except:
+	#	return "no se hizo la creacion del Post"		
+
+
+
+
 
 
 

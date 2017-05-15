@@ -13,12 +13,11 @@ class SetupForm(RegisterForm):
 def categories():
 	return Category
 
-
 class PostForm(Form):
 	title=StringField('title',[
 		validators.Required(),
 		validators.Length(max=80)
 		])
 	body= TextAreaField('Content',[validators.Required()])
-	category= SelectField(u'category')#validators=[optional()])
+	category= SelectField(u'Category')
 	new_category = StringField('New Category')	
