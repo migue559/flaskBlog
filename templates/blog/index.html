@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %} {{blog.blog}} {% endblock %}
+
+{% block content %}
+
+
+<div class='row'>
+	<div class="col-md-offset-3 col-md-6">
+		<h1> <a href="{{ url_for('index') }}">  {{blog.blog}}  </a></h1>
+		<div class="post-lists">
+		{% for post in posts.items %}
+        <div class="post-item">
+
+        <div class="post-body">{{ post.body[:220] }}</div>
+		<div class="text-muted">POsted by {{author.fullname}} on {{post.publish_date}} in {{category.name}}
+			
+		</div>
+		{% endfor %}	
+	
+	    <p class="posts">
+	        {% if posts.has_prev() %}<a href="{{ url_for('index', page=posts.prev_num) }}">&lt; Previous page</a>
+	        {% endif %}
+	        &nbsp;
+	        {% if posts.has_next() %}<a href="{{ url_for('index', page=posts.next_num) }}">Next page &gt;</a>
+	        {% endif %}
+	    </p>
+		
+		</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+
+

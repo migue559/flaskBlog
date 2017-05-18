@@ -1,7 +1,7 @@
 from flask_wtf import Form
 from wtforms  import validators , StringField,TextAreaField,SelectField
 from author.form import RegisterForm
-from blog.models import Category
+from blog.models import category
 from mongo import mongo_objects
 
 class SetupForm(RegisterForm):

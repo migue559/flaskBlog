@@ -1,19 +1,24 @@
 from flaskBlog import app
 from mongo import mongo_objects
 from flask import render_template, redirect, url_for, flash, session
-from blog.form import SetupForm   , PostForm, Category
+from blog.form import SetupForm   , PostForm, category
 from author.models import Author
-from blog.models import Blog, Post
-from mongo import mongo_objects
+from blog.models import Blog, Post, Author, category
 from author.decorators import login_required, author_required
 import bcrypt
 import datetime
 
 
 @app.route('/')
-@app.route('/index')
-def index():	
-	return "Kola hola" 
+@app.route('/index/<int:page>')
+def index(page=1):
+	usr=session['username']
+	posts=Post.query.paginate(page=page, per_page=5)
+	author_id=Author.query.filter(Author.username==usr).first()
+	blog=Blog.query.filter(Blog.id ==  author_id.id ).first()
+	categ=category.query.filter(category.id ==  1).first()
+	return render_template('blog/index.html',posts=posts, blog=blog, author=author_id, category=categ)
+
 
 @app.route('/admin')
 @author_required
@@ -45,48 +50,12 @@ def setup():
 			))
 	return render_template('blog/setup.html', form=form)
 
-@app.route('/post', methods=('GET','POST'))
-@author_required
-def post():
-	form=PostForm()
-	form.category.choices = [   ( str(item["id"]),item["name"] ) for item in mongo_objects.find_categories() ]
-	if  form.validate_on_submit():
-		if form.new_category.data:
-			new_category = form.new_category.data
-			category = new_category
-		else:
-			new_category='no'
-			category = form.category.data
-		Blog=username=session['username']
-		title=form.title.data
-		body=form.body.data
-		slug=None
-		post=""
-		return redirect(url_for('savePost',title=title,body=body,category=category,new_category=new_category,Blog=Blog))
-	return render_template('/blog/post.html', form=form)
-
-@app.route('/article')
-@login_required
-def article():
-	return render_template('blog/article.html')
-
 
 @app.route('/saveBlogAuthor/<fullname>/<email>/<username>/<password>/<blog>')
 def saveBlogAuthor(fullname,email,username,password,blog):
-	max_id_author=mongo_objects.get_id_author()
-	max_id_blog=mongo_objects.get_id_blog()
-	if max_id_author and max_id_blog:
-		id_author=max_id_author[0]
-		id_blog=max_id_blog[0]
-	else:
-		id_author=0
-		id_blog=0
-	if id_author==None or id_blog==None:
-		id_author=1
-		id_blog=1
-	else:
-		id_author+=1
-		id_blog+=1
+	A=mongo_objects.id_blog_author()
+	id_author=A[0]
+	id_blog=A[1]
 	fullname=fullname
 	email=email
 	username=username
@@ -97,29 +66,53 @@ def saveBlogAuthor(fullname,email,username,password,blog):
 		mongo_objects.insert_blog_operation(id_blog,blog,id_author)
 		flash('Blog created')
 		return redirect('/admin')
-		#return "fullname: %s email: %a username: %s password: %s blog: %s max id_author: %s id_blog: %s" % (fullname,email,username,password,blog,id_author,id_blog)
 	except:
 		return "no se hizo la creacion del blog"
 
-@app.route('/savePost/<title>/<body>/<category>/<new_category>/<Blog>')#/<body>/<category>/<new_category>', methods=('GET','POST'))
-def savePost(title=None,body=None,category=None,new_category=None,Blog=None):	
+@app.route('/article/<title>/<body>/<category>')
+@login_required
+def article(title:None,body=None,category=None):
+	_post=Post(blog_id=1, author_id=1, title=title, body=body, category_id=2)
+	return render_template('blog/article.html',post=_post)		
+
+@app.route('/post', methods=('GET','POST'))
+@author_required
+def post():
+	form=PostForm()
+	form.category.choices = [   ( str(item["id"]),item["name"] ) for item in mongo_objects.find_categories() ]
+	if  form.validate_on_submit():
+		if form.new_category.data:
+			new_category = form.new_category.data
+			_category = new_category
+		else:
+			new_category='no'
+			_category = form.category.data
+		return redirect(url_for('savePost',
+			title=form.title.data,
+			body=form.body.data,
+			category=_category,
+			new_category=new_category))
+	return render_template('/blog/post.html', form=form)
+
+
+@app.route('/savePost/<title>/<body>/<category>/<new_category>/')
+def savePost(title=None,body=None,category=None,new_category=None):	
+	usr=session['username']
+	_title=title
+	_body=body
+	_category=category
+	_new_category=new_category
 	if new_category=='no':
-		return "AAAAA   TITLE: %s BODY: %s  CATEGORY: %s NEW CAT: %s  y blog %s" % (title, body, category, new_category, Blog)
-		
+		#if  valida que los datos no esten repetidos
+		mongo_objects.insert_post(title,body,usr,category)
+		flash('post with created')
+		return redirect(url_for('article',title=_title,body=_body,category=_category))
+
 	else:
+		#if  valida que los datos no esten repetidos
 		mongo_objects.insert_category(new_category)
-		return "TITLE: %s BODY: %s  CATEGORY: %s NEW CAT: %s y body %s" % (title, body, category, new_category,Blog)#redirect('/admin')
-	#try:
-		#mongo_objects.insert_author_operation(id_author,fullname,email,username,password,is_author=True)
-		#mongo_objects.insert_blog_operation(id_blog,blog,id_author)
-		#flash('Post created')
-		#return "fullname: %s email: %a username: %s password: %s blog: %s max id_author: %s id_blog: %s" % (fullname,email,username,password,blog,id_author,id_blog)
-	#except:
-	#	return "no se hizo la creacion del Post"		
-
-
-
-
-
+		mongo_objects.insert_post(title,body,usr,category)
+		flash('post with new category created')
+		return redirect(url_for('article',title=_title,body=_body,category=_new_category))
 
 

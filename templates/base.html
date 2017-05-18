@@ -9,8 +9,23 @@
 		<link rel="stylesheet"  href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> <!--type="text/css"-->
 	</head>
 	<body>
-		<div class="container">
+		<div id='logo'>
+		<img src="{{url_for('static',filename='kumma_logo.png') }}" alt="kummacorp" height="35px"/>
+		
+	</div>
+		<div class="container" align="">
+		<hr />
 		{% block content %} {% endblock %}
+		<div class="col-md-offset-3 col-md-6">
+		<hr />
+			<footer>
+				&copy; Kumma 2017
+				{% if  session.get('is_author') %} - <a href="{{ url_for('admin') }}">Admin</a>{% endif%}
+				{% if  session.get('username') %} - <a href="{{ url_for('logout') }}">Logout</a>
+				{% else %} - <a href="{{ url_for('login') }}">Login</a>
+				{% endif%}
+			</footer>			
+		</div>
 		</div>
 		<!-- Jquery Bootstrap -->
 		<script src='https://code.jquery.com/jquery-2.2.4.min.js'></script>

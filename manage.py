@@ -4,9 +4,11 @@ sys.path.append(file_item_path)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))             
 
 from flask_script import Manager, Server
-from flaskBlog import app
+from flaskBlog import app,db
+
 
 manager= Manager(app)
+
 
 manager.add_command('runserver', Server(
 	use_debugger=True,

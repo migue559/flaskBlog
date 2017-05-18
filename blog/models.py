@@ -1,56 +1,38 @@
+from flaskBlog import app
+from flaskBlog import db
+from mongo import mongo_objects
 import datetime
 
-class Blog():
-	id  = 0
-	name="miguel"
-	admin=1
-	#posts =db.relationship('Post', backref='blog',lazy='dynamic')
 
-	def __init__(self, name, admin):
-		self.name = name
-		self.admin = admin
+class Author(db.Document):
+    id = db.IntField()
+    fullname = db.StringField()
+    email = db.StringField()
+    username = db.StringField()
+    password = db.StringField()
+    is_author = db.BoolField()
+  
 
-	def __repr__(self):
-		return "<Name %r>" % self.name
-
-class Post():
-	id=0
-	blod_id=0
-	author_id=0
-	title=""
-	body=""
-	slug=""
-	publish_date=datetime.datetime.now()
-	live=True
-	category_id=0
-
-	def __init__(self, blog,author,title,body,category,slug=None,publish_date=None,live=True):
-		self.blod_id=blog
-		self.author_id=author
-		self.title=title
-		self.body=body
-		self.slug=slug
-		if self.publish_date is None:
-			self.publish_date=datetime.datetime.utcnow()
-		else:
-			self.publish_date=publish_date
-		self.live=live
-		self.category_id=category
-
-	def __repr__(self):
-		return "<Post %r>" % self.title
-
-class Category():
-	id=0
-	name=[]
-
-	def __init__(self,name):
-		self.name=name
-
-	def __repr__(self):
-		return "<Category %r>" %self.name
+class Post(db.Document):
+	id=db.FloatField()
+	blog_id=db.FloatField()
+	author_id=db.FloatField()
+	title=db.StringField()
+	body=db.StringField()
+	Slug=db.FloatField()
+	publish_date=db.DateTimeField()
+	live=db.BoolField()
+	category_id=db.FloatField()
 
 
+class Blog(db.Document):
+	id  =db.FloatField()
+	blog=db.StringField()
+	admin=db.FloatField()
 
+
+class category(db.Document):
+	id=db.FloatField()
+	name=db.StringField()
 
 
