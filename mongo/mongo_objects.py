@@ -18,7 +18,6 @@ def count_blog():
 	else:
 		return num_reg
 
-
 def get_max_id(_collection):
 	id=[]
 	if _collection=='blog':
@@ -27,12 +26,13 @@ def get_max_id(_collection):
 		collection=mongo.db.Post
 	if _collection=='author':
 		collection=mongo.db.Author
+	if _collection=='category':
+		collection=mongo.db.category
 	max_id=collection.find().sort([('id', -1)]).limit(1)   #recupera el ultimo id de la colleccion author
 	for reg in max_id:
 		id.append(reg['id'])
+		id.append(reg['_id'])
 	return id
-
-
 
 def get_id_author():
 	id=[]
@@ -69,15 +69,15 @@ def find_categories():
 def update_operation():
 	return True
 
-def remove_operation():
+def remove_post_operation(_id_post):
+	collection=mongo.db.Post
+	collection.update( { 'id': _id_post }, { '$set': { 'live': False } } )
 	return True	
-
 
 def insert_blog_operation(id,blog,admin):
 	coll_blog=mongo.db.Blog
 	coll_blog.insert({'id': id ,'blog': blog, 'admin':admin })
 	return True
-
 
 def insert_author_operation(id, fullname,email,username,password,is_author=False):
 	coll_author=mongo.db.Author
@@ -87,12 +87,40 @@ def insert_author_operation(id, fullname,email,username,password,is_author=False
 def insert_category(new_category):
 	id=[]
 	coll_category=mongo.db.category
-	max_id=coll_category.find().sort([('id', -1)]).limit(1)   #recupera el ultimo id de la colleccion author
+	valida_existe=coll_category.find({'name':new_category})
+	if valida_existe:
+		return "category already exist"
+	else:
+		max_id=coll_category.find().sort([('id', -1)]).limit(1)   #recupera el ultimo id de la colleccion author
 	for reg in max_id:
 		id.append(reg['id'])
 	id_=id[0]+1
 	coll_category.insert({'id':id_,'name':new_category})
-	return True
+	return "Category added"
+
+def get_id_new_category(new_category):
+	_id=[]
+	coll_category=mongo.db.category
+	id_nc=coll_category.find({'name':new_category})
+	for i in id_nc:
+		_id.append(i['id'])
+	if len(_id) > 1:
+		value=_id[len(_id)-1]
+	else:
+		value=_id[0]
+	return value
+
+def get_category_name(id_category):
+	_id=[]
+	coll_category=mongo.db.category
+	id_nc=coll_category.find({'id':id_category})
+	for i in id_nc:
+		_id.append(i['name'])
+	if len(_id) > 1:
+		value=_id[len(_id)-1]
+	else:
+		value=_id[0]
+	return value
 
 def insert_post(title,body,usr,category):
 	_id_post=0
@@ -116,22 +144,20 @@ def insert_post(title,body,usr,category):
 		_id_post=1
 	else:
 		_id_post+=1
-	slug=None
+	slug=True
 	publish_date=datetime.datetime.now()
 	live=True
-	category_id=category
-	coll_post.insert({'id':_id_post,
+	_category_id=category
+	coll_post.insert({'id':float(_id_post),
 					  'blog_id':blog_id[0],
 					  'author_id':author_id[0],
 					  'title':title,
 					  'body':body,
-					  'slug':slug,
+					  'Slug':slug,
 					  'publish_date':publish_date,
 					  'live':live,
-					  'category_id':category})
-	return True
-
-
+					  'category_id':float(_category_id)})
+	return float(_id_post)
 
 def id_blog_author():
 	A=[]
@@ -158,3 +184,19 @@ def get_posts():
 	a =collection.find({"id": {"$lt": 10}}).sort([("id", 1), ("publish_date", -1)])
 	return a
 
+
+def get_post_edit(id_):
+	post=[]
+	Post=mongo.db.Post
+	max_id=Post.find({'id':id_})
+	for reg in max_id:
+		post.append(reg['_id'])
+		post.append(reg['id'])
+		post.append(reg['blog_id'])
+		post.append(reg['author_id'])
+		post.append(reg['title'])
+		post.append(reg['body'])
+		post.append(reg['Slug'])
+		post.append(reg['publish_date'])
+		post.append(reg['live'])
+	return post

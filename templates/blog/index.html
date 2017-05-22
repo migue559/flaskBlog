@@ -11,7 +11,7 @@
 		<div class="post-lists">
 		{% for post in posts.items %}
         <div class="post-item">
-
+          <h4><a href="{{ url_for('article', id_post=post.id,body=post.body[:220], category=category.name ,message='_', title=post.title, name_category=category.name) }}">{{ post.title }}</a></h4>
         <div class="post-body">{{ post.body[:220] }}</div>
 		<div class="text-muted">POsted by {{author.fullname}} on {{post.publish_date}} in {{category.name}}
 			

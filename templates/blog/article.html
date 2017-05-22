@@ -6,12 +6,21 @@
 
 <div class="row" align="left">
 	<div class="col-md-offset-3 col-md-6">
-		<h3>{{post.title}}</h3>
 
+		    {% if session.get('is_author') %}
+     		 <a href="{{ url_for('edit', post_id=post.id) }}">Edit</a> - 
+      		 <a href="{{ url_for('delete', post_id=post.id) }}">Delete</a>
+      		{% endif %}		
+		<h3>{{post.title}}</h3>
 		{{post.body}}
 		<hr/>
 		<div class="text-mutted">Posted by <a href="#">post.author.fullname </a>
-		on {{post.publish_date}} in <a href="#">{{ post.category }}</a>			
+		on {{post.publish_date}} in <a href="#">{{ name_category }}</a>			
+		<div class="mensaje category">
+		
+		   <p> {{ message }} </p>
+
+		</div>
 		</div>			
 	</div>
 </div>
